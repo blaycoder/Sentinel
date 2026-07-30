@@ -1,0 +1,57 @@
+{
+  "name": "sentinel-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Sentinel — static analysis platform for detecting integration problems before deployment",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @sentinel/core && npm run build -w @sentinel/cli && npm run build -w @sentinel/ai && npm run build -w @sentinel/cloud-sdk",
+    "build:core": "npm run build -w @sentinel/core",
+    "build:cli": "npm run build -w @sentinel/cli",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,json,md,yml,yaml}\"",
+    "typecheck": "npm run build -w @sentinel/core && npm run typecheck -w @sentinel/core && npm run typecheck -w @sentinel/cli && npm run typecheck -w @sentinel/ai && npm run typecheck -w @sentinel/cloud-sdk",
+    "clean": "node --eval \"const {rmSync}=require('fs'); ['packages/core/dist','packages/cli/dist','packages/ai/dist','packages/cloud-sdk/dist'].forEach(p=>rmSync(p,{recursive:true,force:true}));\"",
+    "prepare": "husky",
+    "commitlint": "commitlint --edit"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "@eslint/js": "^9.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.3.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^2.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/sentinel.git"
+  }
+}

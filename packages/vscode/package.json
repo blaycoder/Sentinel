@@ -1,0 +1,10 @@
+{
+  "name": "sentinel-vscode",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sentinel VS Code extension — inline diagnostics and scan-on-save",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

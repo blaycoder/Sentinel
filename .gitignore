@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+packages/*/dist/
+packages/*/tsconfig.tsbuildinfo
+
+# Coverage
+coverage/
+
+# VS Code extension build
+packages/vscode/*.vsix
+packages/vscode/out/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/settings.json
+.idea/
+
+# Test output
+*.junit.xml
+test-results/
+
+# Logs
+*.log
+npm-debug.log*

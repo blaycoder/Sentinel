@@ -1,0 +1,18 @@
+name: Sentinel Scan
+description: Run Sentinel static analysis in your GitHub workflow
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  path:
+    description: Path to scan
+    required: false
+    default: .
+
+runs:
+  using: composite
+  steps:
+    - name: Run Sentinel scan
+      shell: bash
+      run: echo "Sentinel GitHub Action — not yet implemented"
