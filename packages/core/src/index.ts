@@ -16,6 +16,9 @@ export {
   type FileScannerOptions,
 } from './scan/file-scanner.js'
 
+// ── Source parsing ───────────────────────────────────────────────────────────
+export { parseSourceFile } from './parse/source-file.js'
+
 // ── Primary entry point ──────────────────────────────────────────────────────
 export { scan, resolveConfig, DEFAULT_SCAN_CONFIG } from './runner/scanner.js'
 

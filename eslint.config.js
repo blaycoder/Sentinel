@@ -45,7 +45,7 @@ export default tseslint.config(
   },
   {
     // Allow console in CLI entry point and scripts
-    files: ['packages/cli/src/index.ts', 'internal/scripts/**/*.ts'],
+    files: ['packages/cli/src/index.ts', 'internal/scripts/**/*.ts', 'scripts/**/*.ts'],
     rules: { 'no-console': 'off' },
   },
   {
@@ -99,6 +99,8 @@ export default tseslint.config(
       'packages/vscode/**',
       'packages/github-action/**',
       'coverage/**',
+      'sample.ts',
+      'sample.tsx',
     ],
   },
 )

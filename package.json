@@ -20,12 +20,15 @@
     "typecheck": "npm run build -w @sentinel/core && npm run typecheck -w @sentinel/core && npm run typecheck -w @sentinel/cli && npm run typecheck -w @sentinel/ai && npm run typecheck -w @sentinel/cloud-sdk",
     "clean": "node --eval \"const {rmSync}=require('fs'); ['packages/core/dist','packages/cli/dist','packages/ai/dist','packages/cloud-sdk/dist'].forEach(p=>rmSync(p,{recursive:true,force:true}));\"",
     "prepare": "husky",
-    "commitlint": "commitlint --edit"
+    "commitlint": "commitlint --edit",
+    "parse-ast": "npm run build:core -s && npx tsx --tsconfig scripts/tsconfig.json scripts/parse-ast.ts",
+    "parse-ast:tsx": "npm run build:core -s && npx tsx --tsconfig scripts/tsconfig.json scripts/parse-ast.ts --tsx"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
     "@commitlint/config-conventional": "^19.0.0",
     "@eslint/js": "^9.0.0",
+    "@sentinel/core": "*",
     "@vitest/coverage-v8": "^2.0.0",
     "eslint": "^9.0.0",
     "eslint-plugin-import": "^2.29.0",

@@ -34,6 +34,7 @@ export interface SourceLocation {
  *                       this is the template with placeholders (e.g. `/api/${id}`).
  * @property resolvedUrl The URL after resolving baseURL config (if determinable).
  *                       Undefined if it cannot be statically resolved.
+ * @property requestBody Request body/payload when statically resolvable; otherwise undefined.
  */
 export interface ApiCall {
   /** Unique identifier for this call site within a scan. */
@@ -48,6 +49,8 @@ export interface ApiCall {
   readonly urlKind: UrlKind
   /** URL after baseURL composition (if resolvable). */
   readonly resolvedUrl: string | undefined
+  /** Request body/payload when statically resolvable from source; otherwise undefined. */
+  readonly requestBody: string | undefined
   /** Location of the call expression in source. */
   readonly location: SourceLocation
   /** Whether the call has a .catch() / try-catch / error callback. */

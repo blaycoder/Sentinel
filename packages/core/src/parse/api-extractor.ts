@@ -98,6 +98,7 @@ function tryExtractCall(
   const { url, urlKind } = urlArg
   const location = getLocation(node, sourceFile)
   const hasErrorHandler = detectErrorHandler(node)
+  const requestBody = resolveRequestBody(node, caller, sourceFile)
   const rawExpression = node.getText(sourceFile).slice(0, 200) // Cap for safety
 
   logger.debug(`Found ${caller} call`, { file: sourceFile.fileName, line: location.line, url })
@@ -112,6 +113,7 @@ function tryExtractCall(
     location,
     hasErrorHandler,
     rawExpression,
+    requestBody,
   }
 }
 
@@ -128,6 +130,13 @@ interface CallerInfo {
  */
 function identifyCaller(node: ts.CallExpression): CallerInfo | undefined {
   const expr = node.expression
+
+  // TODO: resolve named/namespace imports (e.g. import { get } from 'axios')
+  // TODO: support bracket-access callees (axios['get'])
+  // TODO: add got / superagent caller detection
+  // TODO: detect window.fetch / globalThis.fetch PropertyAccessExpression
+  // TODO: support axios.request()
+  // TODO: reduce generic-instance false positives (cache.get, Map.get)
 
   // fetch(url, options?)
   if (ts.isIdentifier(expr) && expr.text === 'fetch') {
@@ -321,6 +330,115 @@ function extractAxiosConfigMethod(node: ts.CallExpression): HttpMethod {
   }
 
   return 'UNKNOWN'
+}
+
+// ─── Request Body Extraction ──────────────────────────────────────────────────
+//
+// Body extraction reuses object-literal walks similar to URL/method parsing, but
+// targets payload fields instead of url/method:
+//
+//   ObjectLiteralExpression — fetch options, axios config, or inline { id: 1 } body.
+//     A comma-separated { key: value } node; we scan .properties for named keys.
+//
+//   PropertyAssignment — one data:/body: entry inside that object.
+//     prop.name is an Identifier ('data' | 'body'); prop.initializer is the value.
+//
+//   StringLiteral — static string body; read .text directly.
+//
+//   TemplateExpression / NoSubstitutionTemplateLiteral — template body; reconstruct
+//     with ${expr} placeholders (same approach as URL template extraction).
+
+function resolveRequestBody(
+  node: ts.CallExpression,
+  caller: ApiCaller,
+  sourceFile: ts.SourceFile,
+): string | undefined {
+  // axios({ url, data }) — config object pattern
+  if (caller === 'axios') {
+    const firstArg = node.arguments[0]
+    if (firstArg !== undefined && ts.isObjectLiteralExpression(firstArg)) {
+      return extractBodyFromConfig(firstArg, sourceFile)
+    }
+    return undefined
+  }
+
+  // fetch(url, { body })
+  if (caller === 'fetch') {
+    const optionsArg = node.arguments[1]
+    if (optionsArg !== undefined && ts.isObjectLiteralExpression(optionsArg)) {
+      return extractBodyFromFetchOptions(optionsArg, sourceFile)
+    }
+    return undefined
+  }
+
+  // axios.post(url, data) / ky.post(url, data) / client.post(url, data)
+  if (ts.isPropertyAccessExpression(node.expression)) {
+    const secondArg = node.arguments[1]
+    if (secondArg !== undefined) {
+      return extractStaticBodyFromExpression(secondArg, sourceFile)
+    }
+  }
+
+  return undefined
+}
+
+function extractStaticBodyFromExpression(
+  node: ts.Expression,
+  sourceFile: ts.SourceFile,
+): string | undefined {
+  if (ts.isStringLiteral(node)) {
+    return node.text
+  }
+
+  if (ts.isNoSubstitutionTemplateLiteral(node)) {
+    return node.text
+  }
+
+  if (ts.isTemplateExpression(node)) {
+    const head = node.head.text
+    const spans = node.templateSpans.map((span) => {
+      const expr = span.expression.getText(sourceFile)
+      return `\${${expr}}${span.literal.text}`
+    })
+    return head + spans.join('')
+  }
+
+  if (ts.isObjectLiteralExpression(node)) {
+    return node.getText(sourceFile)
+  }
+
+  return undefined
+}
+
+function extractBodyFromObjectLiteral(
+  obj: ts.ObjectLiteralExpression,
+  sourceFile: ts.SourceFile,
+  keys: readonly string[],
+): string | undefined {
+  for (const prop of obj.properties) {
+    if (
+      ts.isPropertyAssignment(prop) &&
+      ts.isIdentifier(prop.name) &&
+      keys.includes(prop.name.text)
+    ) {
+      return extractStaticBodyFromExpression(prop.initializer, sourceFile)
+    }
+  }
+  return undefined
+}
+
+function extractBodyFromConfig(
+  obj: ts.ObjectLiteralExpression,
+  sourceFile: ts.SourceFile,
+): string | undefined {
+  return extractBodyFromObjectLiteral(obj, sourceFile, ['data', 'body'])
+}
+
+function extractBodyFromFetchOptions(
+  options: ts.ObjectLiteralExpression,
+  sourceFile: ts.SourceFile,
+): string | undefined {
+  return extractBodyFromObjectLiteral(options, sourceFile, ['body'])
 }
 
 // ─── Error Handler Detection ──────────────────────────────────────────────────
