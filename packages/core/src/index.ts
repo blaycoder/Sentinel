@@ -72,3 +72,14 @@ export {
   BUILT_IN_RULES,
   RECOMMENDED_RULES,
 } from './rules/index.js'
+
+// ── Reporters ────────────────────────────────────────────────────────────────
+export type {
+  Reporter,
+  ReportSink,
+  JsonReporterOptions,
+  TerminalReporterOptions,
+} from './report/reporter.js'
+export { TerminalReporter } from './report/terminal-reporter.js'
+export { JsonReporter, type FindingsJsonOutput } from './report/json-reporter.js'
+export { formatFindingsTerminal } from './report/format/terminal-format.js'
