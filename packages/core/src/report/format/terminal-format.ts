@@ -23,6 +23,8 @@ export interface TerminalFormatOptions {
 /**
  * Format findings as human-readable terminal output.
  * Pure function — no I/O.
+ *
+ * Returns an empty string when there are no findings (caller may append diagnostics).
  */
 export function formatFindingsTerminal(
   findings: readonly Finding[],
@@ -32,7 +34,7 @@ export function formatFindingsTerminal(
   const c = noColor ? noopColors() : colors()
 
   if (findings.length === 0) {
-    return c.green('✔ No findings.')
+    return ''
   }
 
   const lines: string[] = []

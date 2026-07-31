@@ -83,3 +83,4 @@ export type {
 export { TerminalReporter } from './report/terminal-reporter.js'
 export { JsonReporter, type FindingsJsonOutput } from './report/json-reporter.js'
 export { formatFindingsTerminal } from './report/format/terminal-format.js'
+export { formatScanDiagnosticsTerminal } from './report/format/diagnostic-format.js'

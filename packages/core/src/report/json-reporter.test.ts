@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { Severity, type Finding } from '../model/finding.js'
+import type { ScanDiagnostic } from '../model/scan-result.js'
 import { JsonReporter, type FindingsJsonOutput } from './json-reporter.js'
 
 function sampleFinding(overrides: Partial<Finding> = {}): Finding {
@@ -104,5 +105,34 @@ describe('JsonReporter', () => {
 
   it('throws when neither sink nor filePath is provided', () => {
     expect(() => new JsonReporter({})).toThrow(/sink or filePath/)
+  })
+
+  it('includes diagnostics in JSON when provided', () => {
+    const { sink, output } = captureSink()
+    const reporter = new JsonReporter({ sink })
+    const diagnostics: ScanDiagnostic[] = [
+      {
+        kind: 'rule-error',
+        message: 'Rule failed',
+        file: undefined,
+        cause: undefined,
+      },
+    ]
+
+    reporter.report([], diagnostics)
+
+    const parsed = JSON.parse(output()) as FindingsJsonOutput
+    expect(parsed.diagnostics).toHaveLength(1)
+    expect(parsed.diagnostics?.[0]?.kind).toBe('rule-error')
+  })
+
+  it('omits diagnostics field when none are provided', () => {
+    const { sink, output } = captureSink()
+    const reporter = new JsonReporter({ sink })
+
+    reporter.report([sampleFinding()])
+
+    const parsed = JSON.parse(output()) as FindingsJsonOutput
+    expect(parsed.diagnostics).toBeUndefined()
   })
 })

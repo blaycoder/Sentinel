@@ -3,6 +3,11 @@
  *
  * Wraps readFileSync + ts.createSourceFile. No type-checker, no transformers —
  * just the parse step Sentinel needs before walking the tree.
+ *
+ * Error handling: this module throws on read failure (ENOENT, EACCES, etc.).
+ * That is intentional for script/learning callers (e.g. scripts/parse-ast.ts)
+ * which fail fast with a clear exit code. The production scan pipeline uses
+ * readFileContent() + Result and never calls parseSourceFile.
  */
 
 import { readFileSync } from 'node:fs'

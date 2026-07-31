@@ -6,6 +6,7 @@
  */
 
 import type { Finding } from '../model/finding.js'
+import type { ScanDiagnostic } from '../model/scan-result.js'
 
 /** Destination for a single formatted report payload. */
 export interface ReportSink {
@@ -15,7 +16,7 @@ export interface ReportSink {
 
 /** Contract implemented by TerminalReporter, JsonReporter, and future reporters. */
 export interface Reporter {
-  report(findings: readonly Finding[]): void
+  report(findings: readonly Finding[], diagnostics?: readonly ScanDiagnostic[]): void
 }
 
 export interface TerminalReporterOptions {

@@ -23,11 +23,19 @@ import * as ts from 'typescript'
 import type { ApiCall, ApiCaller, HttpMethod, SourceLocation, UrlKind } from '../model/api-call.js'
 import type { Logger } from '../model/logger.js'
 import { noopLogger } from '../model/logger.js'
+import type { ScanDiagnostic } from '../model/scan-result.js'
+
+import {
+  formatSyntacticDiagnosticMessage,
+  getSyntacticDiagnostics,
+} from './syntactic-diagnostics.js'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ExtractorOptions {
   logger?: Logger
+  /** When set, syntax diagnostics are appended here as unsupported-syntax entries. */
+  diagnostics?: ScanDiagnostic[]
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -54,6 +62,19 @@ export function extractApiCalls(
     /*setParentNodes*/ true,
     detectScriptKind(filePath),
   )
+
+  const syntaxDiagnostics = getSyntacticDiagnostics(sourceFile)
+  if (syntaxDiagnostics.length > 0 && options.diagnostics !== undefined) {
+    for (const diagnostic of syntaxDiagnostics) {
+      const detail = formatSyntacticDiagnosticMessage(diagnostic, sourceFile)
+      options.diagnostics.push({
+        kind: 'unsupported-syntax',
+        message: `${detail} Results for this file may be incomplete.`,
+        file: filePath,
+        cause: undefined,
+      })
+    }
+  }
 
   const calls: ApiCall[] = []
   visitNode(sourceFile, sourceFile, calls, logger)

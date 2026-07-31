@@ -62,10 +62,11 @@ export interface ScanConfig {
 
 /** The category of a scan-level diagnostic (not a rule finding). */
 export type ScanDiagnosticKind =
-  | 'parse-error' // File could not be parsed
+  | 'parse-error' // File could not be read or parsing threw
+  | 'rule-error' // A rule threw during execution
   | 'resolve-error' // Import or alias could not be resolved
   | 'config-warning' // Non-fatal config issue
-  | 'unsupported-syntax' // Syntax the extractor doesn't handle yet
+  | 'unsupported-syntax' // Syntax errors detected during parse (partial AST)
 
 /**
  * A non-fatal diagnostic about the scan process itself (not a rule violation).

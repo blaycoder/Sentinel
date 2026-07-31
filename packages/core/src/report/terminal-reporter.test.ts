@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { Severity, type Finding } from '../model/finding.js'
+import type { ScanDiagnostic } from '../model/scan-result.js'
 import { TerminalReporter } from './terminal-reporter.js'
 
 function sampleFinding(overrides: Partial<Finding> = {}): Finding {
@@ -119,5 +120,55 @@ describe('TerminalReporter', () => {
     const text = output()
     expect(text).toContain('Wrap in try/catch')
     expect(text).toContain('try {')
+  })
+
+  it('renders diagnostics-only output without misleading no-findings message', () => {
+    const { sink, output } = captureSink()
+    const reporter = new TerminalReporter({ sink })
+    const diagnostics: ScanDiagnostic[] = [
+      {
+        kind: 'parse-error',
+        message: 'Could not read file',
+        file: '/project/bad.ts',
+        cause: undefined,
+      },
+    ]
+
+    reporter.report([], diagnostics)
+
+    const text = output()
+    expect(text).not.toContain('No findings')
+    expect(text).toContain('Scan diagnostics')
+    expect(text).toContain('parse error')
+    expect(text).toContain('/project/bad.ts')
+  })
+
+  it('renders findings and diagnostics together', () => {
+    const { sink, output } = captureSink()
+    const reporter = new TerminalReporter({ sink })
+
+    reporter.report(
+      [sampleFinding()],
+      [
+        {
+          kind: 'rule-error',
+          message: "Rule 'missing-error-handler' threw an unexpected error: boom",
+          file: undefined,
+          cause: undefined,
+        },
+        {
+          kind: 'unsupported-syntax',
+          message: '1:1 — Unexpected token. Results for this file may be incomplete.',
+          file: '/project/broken.ts',
+          cause: undefined,
+        },
+      ],
+    )
+
+    const text = output()
+    expect(text).toContain('missing-error-handler')
+    expect(text).toContain('Scan diagnostics')
+    expect(text).toContain('rule error')
+    expect(text).toContain('unsupported syntax')
   })
 })

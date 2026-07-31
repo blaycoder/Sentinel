@@ -135,6 +135,7 @@ export async function scan(config: ScanConfig): Promise<ScanResult> {
     try {
       const calls = extractApiCalls(file.absolutePath, contentResult.value, {
         logger: parseLogger,
+        diagnostics,
       })
       allApiCalls.push(...calls)
     } catch (cause) {
@@ -225,7 +226,7 @@ function executeRules(
       ruleLogger.debug(`Rule '${ruleId}' produced ${String(rulefindings.length)} finding(s)`)
     } catch (cause) {
       diagnostics.push({
-        kind: 'parse-error',
+        kind: 'rule-error',
         message: `Rule '${ruleId}' threw an unexpected error: ${cause instanceof Error ? cause.message : String(cause)}`,
         file: undefined,
         cause: cause instanceof Error ? cause : new Error(String(cause)),

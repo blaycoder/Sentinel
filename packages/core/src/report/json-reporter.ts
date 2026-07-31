@@ -5,6 +5,7 @@
 import { writeFileSync } from 'node:fs'
 
 import type { Finding } from '../model/finding.js'
+import type { ScanDiagnostic } from '../model/scan-result.js'
 
 import {
   assertJsonReporterDestination,
@@ -17,6 +18,8 @@ export interface FindingsJsonOutput {
   version: '1'
   timestamp: string
   findings: Finding[]
+  /** Present when the scan produced non-fatal process diagnostics. */
+  diagnostics?: ScanDiagnostic[]
 }
 
 export class JsonReporter implements Reporter {
@@ -27,11 +30,12 @@ export class JsonReporter implements Reporter {
     this.options = options
   }
 
-  report(findings: readonly Finding[]): void {
+  report(findings: readonly Finding[], diagnostics: readonly ScanDiagnostic[] = []): void {
     const output: FindingsJsonOutput = {
       version: '1',
       timestamp: new Date().toISOString(),
       findings: [...findings],
+      ...(diagnostics.length > 0 ? { diagnostics: [...diagnostics] } : {}),
     }
 
     const json = JSON.stringify(output, null, this.options.pretty === true ? 2 : undefined)
