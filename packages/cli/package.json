@@ -24,6 +24,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "prepublishOnly": "npm run build",
     "build": "tsup",
     "build:watch": "tsup --watch",
     "typecheck": "tsc --project tsconfig.json --noEmit",
@@ -31,7 +32,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@sentinel/core": "*"
+    "@sentinel/core": "^0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
@@ -41,6 +42,18 @@
     "node": ">=20.0.0"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blaycoder/Sentinel.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/blaycoder/Sentinel#readme",
+  "bugs": {
+    "url": "https://github.com/blaycoder/Sentinel/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "cli",
     "static-analysis",

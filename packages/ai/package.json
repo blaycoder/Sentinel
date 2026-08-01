@@ -1,5 +1,6 @@
 {
   "name": "@sentinel/ai",
+  "private": true,
   "version": "0.1.0",
   "description": "Sentinel AI — LLM-powered explanations and fix suggestions for Sentinel findings",
   "type": "module",

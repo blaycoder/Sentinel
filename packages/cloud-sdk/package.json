@@ -1,5 +1,6 @@
 {
   "name": "@sentinel/cloud-sdk",
+  "private": true,
   "version": "0.1.0",
   "description": "Sentinel Cloud SDK — upload scan results to the Sentinel dashboard",
   "type": "module",

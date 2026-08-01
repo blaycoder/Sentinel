@@ -78,3 +78,5 @@ Add tests for new behavior in the package you change. Backfilling every gap abov
 ## License
 
 By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
+
+See [RELEASING.md](RELEASING.md) for npm publish instructions.
