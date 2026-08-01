@@ -37,6 +37,18 @@ export interface BackendRoute {
   readonly responseBody: BodyShape | undefined
 }
 
+/** Outcome of matching a frontend ApiCall against backend OpenAPI routes. */
+export type MatchStatus = 'matched' | 'unmatched' | 'unresolvable'
+
+/** One match outcome per ApiCall — always present, matched or not. */
+export interface MatchResult {
+  readonly apiCallId: string
+  readonly status: MatchStatus
+  /** Present only when status === 'matched'. */
+  readonly route: BackendRoute | undefined
+  readonly reason: string
+}
+
 export class OpenApiParseError extends Error {
   constructor(
     message: string,

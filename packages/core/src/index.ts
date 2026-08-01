@@ -88,11 +88,14 @@ export { formatScanDiagnosticsTerminal } from './report/format/diagnostic-format
 // ── Contract / OpenAPI ───────────────────────────────────────────────────────
 export { parseOpenApiSpec } from './contract/openapi-parser.js'
 export { resolveBodyShape } from './contract/schema-shape.js'
+export { matchApiCalls } from './contract/route-matcher.js'
 export type {
   BackendRoute,
   BasicSchemaType,
   BodyShape,
   ContractHttpMethod,
+  MatchResult,
+  MatchStatus,
   SchemaField,
 } from './contract/model.js'
 export { OpenApiParseError } from './contract/model.js'
