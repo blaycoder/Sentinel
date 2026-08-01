@@ -8,10 +8,11 @@ Thank you for your interest in contributing to Sentinel!
 npm install
 npm run lint
 npm test
+npm run typecheck
 npm run build
 ```
 
-Run all four commands before opening a pull request.
+Run all five commands before opening a pull request. For CI parity you can also run `npm run format:check`.
 
 ## Commit Messages
 
@@ -51,7 +52,21 @@ Boundary violations are caught by ESLint (`no-restricted-imports`) and TypeScrip
 
 ## Architecture
 
-See [docs/architecture.md](docs/architecture.md) for the full architecture design document.
+Architecture documentation is coming soon.
+
+## Tests
+
+Root `npm test` runs Vitest across all workspace packages.
+
+**Well covered today:** API extraction, file scanning, OpenAPI parsing, route matching, body diffing, contract pipeline integration (`scanner.test.ts`), CLI scan end-to-end (`scan.test.ts`), reporters, and path validation.
+
+**Areas still lacking dedicated unit tests** (behavior is often exercised indirectly):
+
+- `@sentinel/core`: `url-resolver.ts`, `file-reader.ts`
+- `@sentinel/core`: individual rule modules (`no-hardcoded-url.ts`, `missing-error-handler.ts`)
+- `@sentinel/cli`: `config/loader.ts`, `args.ts`, formatters, `init.ts`
+
+Add tests for new behavior in the package you change. Backfilling every gap above is not required for each PR.
 
 ## Pull Requests
 
