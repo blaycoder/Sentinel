@@ -84,3 +84,15 @@ export { TerminalReporter } from './report/terminal-reporter.js'
 export { JsonReporter, type FindingsJsonOutput } from './report/json-reporter.js'
 export { formatFindingsTerminal } from './report/format/terminal-format.js'
 export { formatScanDiagnosticsTerminal } from './report/format/diagnostic-format.js'
+
+// ── Contract / OpenAPI ───────────────────────────────────────────────────────
+export { parseOpenApiSpec } from './contract/openapi-parser.js'
+export { resolveBodyShape } from './contract/schema-shape.js'
+export type {
+  BackendRoute,
+  BasicSchemaType,
+  BodyShape,
+  ContractHttpMethod,
+  SchemaField,
+} from './contract/model.js'
+export { OpenApiParseError } from './contract/model.js'
