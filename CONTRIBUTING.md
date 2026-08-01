@@ -56,7 +56,7 @@ Boundary violations are caught by ESLint (`no-restricted-imports`) and TypeScrip
 
 ## Architecture
 
-Architecture documentation is planned. There is no `docs/architecture.md` yet — do not link to it.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for how the scan pipeline, contract checking, and package boundaries fit together.
 
 ## Tests
 
