@@ -10,7 +10,7 @@
  * can handle multiple Sentinel versions gracefully.
  */
 
-import type { ScanResult } from '@sentinel/core'
+import type { ScanResult } from '@sentinel-scan/core'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

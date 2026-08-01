@@ -1,7 +1,7 @@
 import { statSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { err, ok, type Result } from '@sentinel/core'
+import { err, ok, type Result } from '@sentinel-scan/core'
 
 import { PathValidationError } from './errors.js'
 

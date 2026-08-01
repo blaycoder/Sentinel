@@ -11,8 +11,8 @@
  * This formatter produces SARIF that passes GitHub's sarif schema validation.
  */
 
-import type { Finding, ScanResult } from '@sentinel/core'
-import { Severity } from '@sentinel/core'
+import type { Finding, ScanResult } from '@sentinel-scan/core'
+import { Severity } from '@sentinel-scan/core'
 
 // ─── SARIF Types (minimal subset) ────────────────────────────────────────────
 
@@ -80,7 +80,7 @@ const SEVERITY_TO_SARIF_LEVEL: Record<string, SarifResult['level']> = {
 export interface SarifFormatterOptions {
   /** Absolute path to the repository root — used to compute relative URIs. */
   repositoryRoot?: string
-  /** Version of @sentinel/cli to embed in the tool driver. */
+  /** Version of @sentinel-scan/cli to embed in the tool driver. */
   toolVersion?: string
 }
 

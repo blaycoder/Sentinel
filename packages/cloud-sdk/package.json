@@ -1,5 +1,5 @@
 {
-  "name": "@sentinel/cloud-sdk",
+  "name": "@sentinel-scan/cloud-sdk",
   "private": true,
   "version": "0.1.0",
   "description": "Sentinel Cloud SDK — upload scan results to the Sentinel dashboard",
@@ -23,7 +23,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@sentinel/core": "*"
+    "@sentinel-scan/core": "*"
   },
   "devDependencies": {
     "typescript": "^5.5.0",

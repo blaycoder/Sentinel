@@ -43,14 +43,14 @@ Commit messages are validated by commitlint via Husky.
 
 Sentinel enforces strict package boundaries. When adding imports, follow these rules:
 
-| Package               | May import                         | Must NOT import                                    |
-| --------------------- | ---------------------------------- | -------------------------------------------------- |
-| `@sentinel/core`      | Node builtins, `typescript` (peer) | Any other `@sentinel/*` package                    |
-| `@sentinel/cli`       | `@sentinel/core`                   | `@sentinel/ai`, `@sentinel/cloud-sdk`              |
-| `@sentinel/ai`        | `@sentinel/core`                   | `@sentinel/cli`, `sentinel-vscode`                 |
-| `@sentinel/cloud-sdk` | `@sentinel/core`                   | `@sentinel/cli`, `@sentinel/ai`, `sentinel-vscode` |
+| Package                    | May import                         | Must NOT import                                              |
+| -------------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| `@sentinel-scan/core`      | Node builtins, `typescript` (peer) | Any other `@sentinel-scan/*` package                         |
+| `@sentinel-scan/cli`       | `@sentinel-scan/core`              | `@sentinel-scan/ai`, `@sentinel-scan/cloud-sdk`              |
+| `@sentinel-scan/ai`        | `@sentinel-scan/core`              | `@sentinel-scan/cli`, `sentinel-vscode`                      |
+| `@sentinel-scan/cloud-sdk` | `@sentinel-scan/core`              | `@sentinel-scan/cli`, `@sentinel-scan/ai`, `sentinel-vscode` |
 
-`@sentinel/core` must remain pure — zero runtime dependencies. All I/O (stdout, filesystem, network) belongs in consumer packages like CLI or cloud-sdk.
+`@sentinel-scan/core` must remain pure — zero runtime dependencies. All I/O (stdout, filesystem, network) belongs in consumer packages like CLI or cloud-sdk.
 
 Boundary violations are caught by ESLint (`no-restricted-imports`) and TypeScript project references.
 
@@ -66,9 +66,9 @@ Root `npm test` runs Vitest across all workspace packages.
 
 **Areas still lacking dedicated unit tests** (behavior is often exercised indirectly):
 
-- `@sentinel/core`: `url-resolver.ts`, `file-reader.ts`
-- `@sentinel/core`: individual rule modules (`no-hardcoded-url.ts`, `missing-error-handler.ts`)
-- `@sentinel/cli`: `config/loader.ts`, `args.ts`, formatters, `init.ts`
+- `@sentinel-scan/core`: `url-resolver.ts`, `file-reader.ts`
+- `@sentinel-scan/core`: individual rule modules (`no-hardcoded-url.ts`, `missing-error-handler.ts`)
+- `@sentinel-scan/cli`: `config/loader.ts`, `args.ts`, formatters, `init.ts`
 
 Add tests for new behavior in the package you change. Backfilling every gap above is not required for each PR.
 

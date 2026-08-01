@@ -2,8 +2,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 
-import type { Logger, ScanResult } from '@sentinel/core'
-import { Severity } from '@sentinel/core'
+import type { Logger, ScanResult } from '@sentinel-scan/core'
+import { Severity } from '@sentinel-scan/core'
 import { describe, expect, it } from 'vitest'
 
 import type { ScanFlags } from '../args.js'

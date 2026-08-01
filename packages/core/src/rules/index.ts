@@ -1,7 +1,7 @@
 /**
  * Built-in rules index.
  *
- * This is the registry of all rules that ship with @sentinel/core.
+ * This is the registry of all rules that ship with @sentinel-scan/core.
  * Only built-in rules in BUILT_IN_RULES are executed today — the runner
  * resolves rule IDs from ScanConfig.rules via this map. Unknown rule IDs
  * produce a config-warning ScanDiagnostic and are skipped (not executed).

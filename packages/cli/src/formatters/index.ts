@@ -5,7 +5,7 @@
  * the right formatter based on the OutputFormat flag.
  */
 
-import type { ScanResult } from '@sentinel/core'
+import type { ScanResult } from '@sentinel-scan/core'
 
 import type { OutputFormat } from '../args.js'
 

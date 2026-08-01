@@ -1,4 +1,4 @@
-# @sentinel/cli
+# @sentinel-scan/cli
 
 Sentinel CLI — scan your codebase for API integration problems.
 
@@ -7,13 +7,13 @@ Sentinel CLI — scan your codebase for API integration problems.
 Global install (recommended once published):
 
 ```bash
-npm install -g @sentinel/cli
+npm install -g @sentinel-scan/cli
 ```
 
 Or add as a project dependency:
 
 ```bash
-npm install @sentinel/cli
+npm install @sentinel-scan/cli
 npx sentinel scan
 ```
 

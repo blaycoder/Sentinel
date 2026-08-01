@@ -1,5 +1,5 @@
 {
-  "name": "@sentinel/ai",
+  "name": "@sentinel-scan/ai",
   "private": true,
   "version": "0.1.0",
   "description": "Sentinel AI — LLM-powered explanations and fix suggestions for Sentinel findings",
@@ -23,7 +23,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@sentinel/core": "*"
+    "@sentinel-scan/core": "*"
   },
   "devDependencies": {
     "typescript": "^5.5.0",

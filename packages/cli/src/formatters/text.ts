@@ -9,8 +9,8 @@
  * by the caller, not this module.
  */
 
-import type { Finding, ScanResult } from '@sentinel/core'
-import { Severity } from '@sentinel/core'
+import type { Finding, ScanResult } from '@sentinel-scan/core'
+import { Severity } from '@sentinel-scan/core'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

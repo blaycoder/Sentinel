@@ -1,5 +1,5 @@
 {
-  "name": "@sentinel/core",
+  "name": "@sentinel-scan/core",
   "version": "0.1.0",
   "description": "Sentinel core analysis engine — pure, zero runtime dependencies",
   "type": "module",

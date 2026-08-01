@@ -2,14 +2,14 @@
  * logger.ts — Console logger implementation for the CLI.
  *
  * This is the only place in the CLI that implements the Logger interface
- * from @sentinel/core. It writes to stderr (for info/debug/warn/error)
+ * from @sentinel-scan/core. It writes to stderr (for info/debug/warn/error)
  * so that stdout remains clean for scan output.
  *
  * Color is applied inline (hand-rolled ANSI) for consistency with the
  * text formatter — no chalk dependency.
  */
 
-import type { Logger } from '@sentinel/core'
+import type { Logger } from '@sentinel-scan/core'
 
 const ANSI = {
   reset: '\x1b[0m',

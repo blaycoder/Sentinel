@@ -1,5 +1,5 @@
 {
-  "name": "@sentinel/cli",
+  "name": "@sentinel-scan/cli",
   "version": "0.1.0",
   "description": "Sentinel CLI — scan your codebase for API integration problems",
   "type": "module",
@@ -32,7 +32,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@sentinel/core": "^0.1.0"
+    "@sentinel-scan/core": "^0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.5.0",

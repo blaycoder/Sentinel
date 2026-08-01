@@ -2,7 +2,7 @@
  * Logger interface — injected into core functions so consumers control
  * where log output goes (stdout, VS Code OutputChannel, structured JSON, etc.).
  *
- * @sentinel/core NEVER calls console.* directly. It always uses this interface.
+ * @sentinel-scan/core NEVER calls console.* directly. It always uses this interface.
  * If no logger is provided, noopLogger is used (silent).
  */
 

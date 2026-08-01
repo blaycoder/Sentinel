@@ -1,5 +1,5 @@
 /**
- * @sentinel/core — public API surface.
+ * @sentinel-scan/core — public API surface.
  *
  * This is the ONLY file that external consumers import from.
  * Everything exported here is part of the stable public API.

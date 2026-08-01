@@ -12,6 +12,6 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ['@sentinel/core', 'typescript'],
+  external: ['@sentinel-scan/core', 'typescript'],
   treeshake: true,
 })

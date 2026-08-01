@@ -1,4 +1,4 @@
-# @sentinel/core
+# @sentinel-scan/core
 
 Sentinel core analysis engine — pure, zero runtime dependencies.
 
@@ -12,19 +12,19 @@ Use this package to run Sentinel scans programmatically in Node.js scripts, CI p
 Install TypeScript alongside core if your project does not already have it:
 
 ```bash
-npm install @sentinel/core typescript
+npm install @sentinel-scan/core typescript
 ```
 
 ## Installation
 
 ```bash
-npm install @sentinel/core
+npm install @sentinel-scan/core
 ```
 
 ## Programmatic API
 
 ```ts
-import { resolveConfig, scan } from '@sentinel/core'
+import { resolveConfig, scan } from '@sentinel-scan/core'
 
 const result = await scan(
   resolveConfig({

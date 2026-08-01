@@ -19,8 +19,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { resolveConfig } from '@sentinel/core'
-import type { ScanConfig, SentinelConfig } from '@sentinel/core'
+import { resolveConfig } from '@sentinel-scan/core'
+import type { ScanConfig, SentinelConfig } from '@sentinel-scan/core'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

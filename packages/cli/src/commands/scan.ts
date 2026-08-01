@@ -12,7 +12,7 @@
 
 import { writeFileSync } from 'node:fs'
 
-import { scan, Severity, type Logger, type ScanResult } from '@sentinel/core'
+import { scan, Severity, type Logger, type ScanResult } from '@sentinel-scan/core'
 
 import type { ScanFlags } from '../args.js'
 import { ConfigLoadError, loadConfig } from '../config/loader.js'

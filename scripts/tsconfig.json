@@ -8,7 +8,7 @@
     "noEmit": true,
     "skipLibCheck": true,
     "paths": {
-      "@sentinel/core": ["../packages/core/src/index.ts"]
+      "@sentinel-scan/core": ["../packages/core/src/index.ts"]
     }
   },
   "include": ["*.ts"]

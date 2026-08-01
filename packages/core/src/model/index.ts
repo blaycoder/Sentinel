@@ -1,5 +1,5 @@
 /**
- * @sentinel/core model — re-exports all domain types.
+ * @sentinel-scan/core model — re-exports all domain types.
  *
  * All types that cross package boundaries live here.
  * This barrel is the only one in `src/model/`; individual sub-modules

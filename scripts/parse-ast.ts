@@ -14,12 +14,12 @@
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { parseSourceFile } from '@sentinel/core'
+import { parseSourceFile } from '@sentinel-scan/core'
 import * as ts from 'typescript'
 
 // ─── Resolve paths relative to repo root ─────────────────────────────────────
 //
-// parseSourceFile (from @sentinel/core) reads the file and runs createSourceFile.
+// parseSourceFile (from @sentinel-scan/core) reads the file and runs createSourceFile.
 // The script only chooses which sample file to parse.
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))

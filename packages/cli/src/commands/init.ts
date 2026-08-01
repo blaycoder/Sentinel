@@ -10,7 +10,7 @@ import { resolve, join } from 'node:path'
 
 import type { InitFlags } from '../args.js'
 
-const CONFIG_TEMPLATE = `import type { SentinelConfig } from '@sentinel/core'
+const CONFIG_TEMPLATE = `import type { SentinelConfig } from '@sentinel-scan/core'
 
 export default {
   // Files to scan (relative to this config file's directory)

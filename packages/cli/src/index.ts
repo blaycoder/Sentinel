@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * @sentinel/cli — bin entry point.
+ * @sentinel-scan/cli — bin entry point.
  *
  * This is the ONLY file in the codebase that:
  *   1. Reads process.argv

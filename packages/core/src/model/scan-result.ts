@@ -127,7 +127,7 @@ export interface ScanStats {
  * The runner merges this with defaults before passing to scan().
  *
  * Exported from the public API so users can get type safety on their config file:
- *   import type { SentinelConfig } from '@sentinel/core'
+ *   import type { SentinelConfig } from '@sentinel-scan/core'
  *   export default { ... } satisfies SentinelConfig
  */
 export type SentinelConfig = Partial<Omit<ScanConfig, 'logger'>>

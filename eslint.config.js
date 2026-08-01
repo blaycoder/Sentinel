@@ -50,16 +50,16 @@ export default tseslint.config(
   },
   {
     // ── Dependency boundary enforcement ──────────────────────────────────
-    // @sentinel/core must not import from any other sentinel package
+    // @sentinel-scan/core must not import from any other sentinel package
     files: ['packages/core/src/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
-            '@sentinel/cli',
-            '@sentinel/ai',
-            '@sentinel/cloud-sdk',
+            '@sentinel-scan/cli',
+            '@sentinel-scan/ai',
+            '@sentinel-scan/cloud-sdk',
             '../../../packages/cli/*',
             '../../../packages/ai/*',
             '../../../packages/cloud-sdk/*',
@@ -69,22 +69,22 @@ export default tseslint.config(
     },
   },
   {
-    // @sentinel/ai must not import from CLI or vscode
+    // @sentinel-scan/ai must not import from CLI or vscode
     files: ['packages/ai/src/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: ['@sentinel/cli', 'sentinel-vscode'] },
+        { patterns: ['@sentinel-scan/cli', 'sentinel-vscode'] },
       ],
     },
   },
   {
-    // @sentinel/cloud-sdk must not import from CLI, AI, or vscode
+    // @sentinel-scan/cloud-sdk must not import from CLI, AI, or vscode
     files: ['packages/cloud-sdk/src/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: ['@sentinel/cli', '@sentinel/ai', 'sentinel-vscode'] },
+        { patterns: ['@sentinel-scan/cli', '@sentinel-scan/ai', 'sentinel-vscode'] },
       ],
     },
   },
