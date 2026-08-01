@@ -92,10 +92,11 @@ export async function scan(config: ScanConfig): Promise<ScanResult> {
   const allApiCalls: ApiCall[] = []
 
   // ── Phase 1: File Discovery ──────────────────────────────────────────────
-  scanLogger.debug('Discovering files', { exclude: config.exclude })
+  scanLogger.debug('Discovering files', { include: config.include, exclude: config.exclude })
 
   const discoveryResult = await scanFiles({
     rootDir: config.rootDir,
+    include: config.include,
     extraIgnore: config.exclude,
     logger: scopedLogger(logger, 'sentinel:scan:files'),
   })

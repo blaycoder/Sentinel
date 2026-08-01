@@ -18,16 +18,24 @@ function makeCapturingLogger(): { logger: Logger; entries: LogEntry[] } {
 
   const logger: Logger = {
     debug(message, meta) {
-      entries.push(meta === undefined ? { level: 'debug', message } : { level: 'debug', message, meta })
+      entries.push(
+        meta === undefined ? { level: 'debug', message } : { level: 'debug', message, meta },
+      )
     },
     info(message, meta) {
-      entries.push(meta === undefined ? { level: 'info', message } : { level: 'info', message, meta })
+      entries.push(
+        meta === undefined ? { level: 'info', message } : { level: 'info', message, meta },
+      )
     },
     warn(message, meta) {
-      entries.push(meta === undefined ? { level: 'warn', message } : { level: 'warn', message, meta })
+      entries.push(
+        meta === undefined ? { level: 'warn', message } : { level: 'warn', message, meta },
+      )
     },
     error(message, meta) {
-      entries.push(meta === undefined ? { level: 'error', message } : { level: 'error', message, meta })
+      entries.push(
+        meta === undefined ? { level: 'error', message } : { level: 'error', message, meta },
+      )
     },
   }
 
@@ -185,10 +193,31 @@ describe('scanFiles', () => {
 
       expect(result.value).toHaveLength(0)
       expect(
-        entries.some(
-          (e) => e.level === 'info' && e.message === 'No matching source files found',
-        ),
+        entries.some((e) => e.level === 'info' && e.message === 'No matching source files found'),
       ).toBe(true)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('discovers .mts and .cts source files', async () => {
+    const root = createFixture()
+
+    try {
+      writeFileSync(join(root, 'app.mts'), 'export {}')
+      writeFileSync(join(root, 'app.cts'), 'export {}')
+
+      const result = await scanFiles({ rootDir: root })
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      expect(result.value).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ relativePath: 'app.mts', extension: '.mts' }),
+          expect.objectContaining({ relativePath: 'app.cts', extension: '.cts' }),
+        ]),
+      )
     } finally {
       rmSync(root, { recursive: true, force: true })
     }

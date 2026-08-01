@@ -2,8 +2,11 @@
  * Built-in rules index.
  *
  * This is the registry of all rules that ship with @sentinel/core.
- * Third-party rules are NOT registered here — they are declared in
- * the user's sentinel.config.ts and passed to the runner directly.
+ * Only built-in rules in BUILT_IN_RULES are executed today — the runner
+ * resolves rule IDs from ScanConfig.rules via this map. Unknown rule IDs
+ * produce a config-warning ScanDiagnostic and are skipped (not executed).
+ *
+ * Custom/third-party rule loading is not yet supported and is future work.
  */
 
 import type { Rule } from '../model/rule.js'

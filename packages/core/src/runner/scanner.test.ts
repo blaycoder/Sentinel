@@ -186,4 +186,50 @@ describe('scan', () => {
       rmSync(root, { recursive: true, force: true })
     }
   })
+
+  it('respects include patterns and excludes files outside them', async () => {
+    const root = createFixture()
+
+    try {
+      writeScanFixture(root, {
+        'src/in-scope.ts': "fetch('/in')",
+        'lib/out-of-scope.ts': "fetch('/out')",
+      })
+
+      const result = await scan(
+        resolveConfig({
+          rootDir: root,
+          include: ['src/**'],
+          rules: { 'missing-error-handler': 'off', 'no-hardcoded-url': 'off' },
+        }),
+      )
+
+      expect(result.stats.filesScanned).toBe(1)
+      expect(result.apiCalls.some((call) => call.url === '/in')).toBe(true)
+      expect(result.apiCalls.some((call) => call.url === '/out')).toBe(false)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('discovers and scans .mts files with default include config', async () => {
+    const root = createFixture()
+
+    try {
+      writeScanFixture(root, {
+        'api.mts': "fetch('/mts')",
+      })
+
+      const result = await scan(
+        resolveConfig({
+          rootDir: root,
+          rules: { 'missing-error-handler': 'off', 'no-hardcoded-url': 'off' },
+        }),
+      )
+
+      expect(result.apiCalls.some((call) => call.url === '/mts')).toBe(true)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
 })

@@ -32,6 +32,11 @@ export interface ScannedFile {
 export interface FileScannerOptions {
   /** Root directory to scan (must exist and be a directory). */
   readonly rootDir: string
+  /**
+   * Glob patterns a file must match at least one of to be included.
+   * When omitted or empty, all discovered source extensions are included.
+   */
+  readonly include?: readonly string[]
   /** Additional glob patterns to exclude (merged with defaults). */
   readonly extraIgnore?: readonly string[]
   /** When true (default), merge patterns from .gitignore files found during walk. */
@@ -52,7 +57,7 @@ export class FileScannerError extends Error {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx'])
+const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts'])
 
 const DEFAULT_IGNORED_DIRS = new Set([
   'node_modules',
@@ -68,7 +73,10 @@ const DEFAULT_IGNORED_DIRS = new Set([
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Recursively discover .ts, .tsx, .js, and .jsx files under rootDir.
+ * Recursively discover .ts, .tsx, .js, .jsx, .mts, and .cts files under rootDir.
+ *
+ * When `include` patterns are provided, a file must match at least one to be
+ * returned. Exclude patterns reject files that match any ignore glob.
  *
  * Non-fatal errors (permission denied on a subdirectory) warn and continue.
  * Fatal errors (root unreadable) return err().
@@ -80,10 +88,19 @@ export async function scanFiles(
   const logger = options.logger ?? noopLogger
   const respectGitignore = options.respectGitignore !== false
   const ignorePatterns = [...(options.extraIgnore ?? [])]
+  const includePatterns = [...(options.include ?? [])]
 
   try {
     const files: ScannedFile[] = []
-    await walkDir(rootDir, rootDir, ignorePatterns, respectGitignore, logger, files)
+    await walkDir(
+      rootDir,
+      rootDir,
+      ignorePatterns,
+      includePatterns,
+      respectGitignore,
+      logger,
+      files,
+    )
 
     if (files.length === 0) {
       logger.info('No matching source files found', { rootDir })
@@ -101,6 +118,7 @@ async function walkDir(
   dir: string,
   rootDir: string,
   ignorePatterns: readonly string[],
+  includePatterns: readonly string[],
   respectGitignore: boolean,
   logger: Logger,
   accumulator: ScannedFile[],
@@ -146,7 +164,15 @@ async function walkDir(
     if (entry.isDirectory()) {
       if (DEFAULT_IGNORED_DIRS.has(entry.name)) continue
       if (isIgnoredPath(relativePath, localIgnorePatterns, true)) continue
-      await walkDir(absolutePath, rootDir, localIgnorePatterns, respectGitignore, logger, accumulator)
+      await walkDir(
+        absolutePath,
+        rootDir,
+        localIgnorePatterns,
+        includePatterns,
+        respectGitignore,
+        logger,
+        accumulator,
+      )
       continue
     }
 
@@ -155,6 +181,7 @@ async function walkDir(
 
     const extension = extname(relativePath).toLowerCase()
     if (!SOURCE_EXTENSIONS.has(extension)) continue
+    if (!isIncludedPath(relativePath, includePatterns)) continue
 
     accumulator.push({
       absolutePath,
@@ -188,6 +215,11 @@ function isIgnoredPath(
   }
 
   return false
+}
+
+function isIncludedPath(relativePath: string, includePatterns: readonly string[]): boolean {
+  if (includePatterns.length === 0) return true
+  return matchesAnyGlob(relativePath, includePatterns)
 }
 
 function normalizeRelativePath(path: string): string {
