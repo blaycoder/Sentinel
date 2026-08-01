@@ -2,7 +2,11 @@
 
 Thank you for your interest in contributing to Sentinel!
 
+End users install from npm — see [README.md](README.md). This guide is for contributors working from a cloned repository.
+
 ## Getting Started
+
+Clone the repo and run from source:
 
 ```bash
 npm install
@@ -52,7 +56,7 @@ Boundary violations are caught by ESLint (`no-restricted-imports`) and TypeScrip
 
 ## Architecture
 
-Architecture documentation is coming soon.
+Architecture documentation is planned. There is no `docs/architecture.md` yet — do not link to it.
 
 ## Tests
 

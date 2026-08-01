@@ -2,12 +2,13 @@
 
 > **Catch integration issues, API contract mismatches, configuration problems, and breaking changes before deployment.**
 
-[![CI](https://github.com/your-org/sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/sentinel/actions/workflows/ci.yml)
+[![CI](https://github.com/blaycoder/Sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/blaycoder/Sentinel/actions/workflows/ci.yml)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Today:** Sentinel's phase-one CLI is functional. It scans frontend codebases, extracts API calls, and reports static analysis findings. When you point `contractSource` at a local OpenAPI v3 JSON file, it also checks **request-body shapes** against your backend schema for matched routes.
+**Today:** Sentinel's phase-one CLI is functional and installable from npm. It scans frontend codebases, extracts API calls, and reports static analysis findings. When you point `contractSource` at a local OpenAPI v3 JSON file, it also checks **request-body shapes** against your backend schema for matched routes.
 
-**Not yet in this release:** response-shape diffing, Findings for unmatched endpoints or unresolvable calls (those are skipped silently), third-party rules, and the cloud SDK, VS Code extension, and GitHub Action (future phases).
+**Not yet in this release:** response-shape diffing, unmatched-endpoint flagging, third-party rules, and the cloud SDK, VS Code extension, and GitHub Action (future phases).
 
 ---
 
@@ -33,9 +34,7 @@ OpenAPI support is deliberately scoped: **local JSON file paths only** — no re
 
 ---
 
-## Status
-
-### Works today
+## Current Status
 
 - `sentinel scan` — end-to-end analysis (config load → scan → format → stdout or file)
 - `sentinel init` — scaffolds `sentinel.config.ts`
@@ -45,31 +44,39 @@ OpenAPI support is deliberately scoped: **local JSON file paths only** — no re
   - `api-contract-mismatch` (default: **error**, active when `contractSource` is configured)
 - CLI output: `--format text|json|sarif`, `--output <file>`, `--max-warnings`, exit codes 0/1/2
 - Source extensions: `.ts`, `.tsx`, `.js`, `.jsx`, `.mts`, `.cts`
+- **Published on npm:** [`@sentinel/core`](https://www.npmjs.com/package/@sentinel/core), [`@sentinel/cli`](https://www.npmjs.com/package/@sentinel/cli)
 
 ### Not yet
 
-- Response contract diffing
-- Findings for unmatched endpoints, unresolvable URLs, or not-diffable request bodies
+- Response-shape diffing
+- Unmatched-endpoint flagging
 - Third-party / custom rule loading
-- `@sentinel/ai` — AI explanations (placeholder package)
-- `@sentinel/cloud-sdk` — cloud dashboard upload (placeholder)
-- `sentinel-vscode` — VS Code extension (shell package)
-- `sentinel-action` — GitHub Action (stub)
+- `@sentinel/ai` — AI explanations (future phase)
+- `@sentinel/cloud-sdk` — cloud dashboard upload (future phase)
+- `sentinel-vscode` — VS Code extension (future phase)
+- `sentinel-action` — GitHub Action (future phase)
 
 ---
 
-## Quick Start
+## Installation
 
-From a clone of this repository:
+### Global install (recommended)
 
 ```bash
-npm install
-npm run build
-npm exec -w @sentinel/cli -- sentinel init
-npm exec -w @sentinel/cli -- sentinel scan ./path/to/your/src
+npm install -g @sentinel/cli
+sentinel init
+sentinel scan ./src
 ```
 
-When `@sentinel/cli` is published, you will also be able to install globally (`npm install -g @sentinel/cli`) and run `sentinel` directly.
+### Project-local install
+
+```bash
+npm install --save-dev @sentinel/cli
+npx sentinel init
+npx sentinel scan ./src
+```
+
+Requires **Node.js** `>=20.0.0`.
 
 ### Example configuration
 
@@ -86,7 +93,8 @@ export default {
     'missing-error-handler': 'warning',
     'api-contract-mismatch': 'error',
   },
-  // Optional: request-body contract checking against a local OpenAPI v3 JSON file
+  // Request-body contract checking against a local OpenAPI v3 JSON file only
+  // (no remote URLs, no YAML)
   contractSource: './openapi/api.json',
 } satisfies SentinelConfig
 ```
@@ -97,13 +105,13 @@ export default {
 
 ```bash
 # Scan with JSON output
-npm exec -w @sentinel/cli -- sentinel scan ./src --format json
+sentinel scan ./src --format json
 
 # Write SARIF for GitHub Code Scanning
-npm exec -w @sentinel/cli -- sentinel scan ./src --format sarif --output results.sarif
+sentinel scan ./src --format sarif --output results.sarif
 
 # Fail CI if more than 10 warnings
-npm exec -w @sentinel/cli -- sentinel scan ./src --max-warnings 10
+sentinel scan ./src --max-warnings 10
 ```
 
 ---
@@ -164,9 +172,15 @@ Log output goes to stderr; scan results go to stdout (or `--output`).
 
 ---
 
-## Using as a library
+## Programmatic usage
 
-`@sentinel/core` exposes the analysis engine for programmatic use:
+`@sentinel/core` exposes the analysis engine for library consumers:
+
+```bash
+npm install @sentinel/core typescript
+```
+
+TypeScript (`>=5.0.0`) is a **required peer dependency** — it is used at runtime for AST parsing. Install it alongside core if your project does not already have it.
 
 ```ts
 import { resolveConfig, scan } from '@sentinel/core'
@@ -186,33 +200,39 @@ console.log(result.diagnostics)
 
 ## Packages
 
-| Package                                     | Status                             |
-| ------------------------------------------- | ---------------------------------- |
-| [`@sentinel/core`](packages/core)           | **Working** — pure analysis engine |
-| [`@sentinel/cli`](packages/cli)             | **Working** — terminal interface   |
-| [`@sentinel/ai`](packages/ai)               | Planned (placeholder)              |
-| [`@sentinel/cloud-sdk`](packages/cloud-sdk) | Planned (placeholder)              |
-| [`sentinel-vscode`](packages/vscode)        | Planned (shell package)            |
-| [`sentinel-action`](packages/github-action) | Planned (stub action)              |
+| Package                                     | Status                                                                                |
+| ------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [`@sentinel/core`](packages/core)           | **Published** — analysis engine ([npm](https://www.npmjs.com/package/@sentinel/core)) |
+| [`@sentinel/cli`](packages/cli)             | **Published** — CLI ([npm](https://www.npmjs.com/package/@sentinel/cli))              |
+| [`@sentinel/ai`](packages/ai)               | Planned — not on npm (future phase)                                                   |
+| [`@sentinel/cloud-sdk`](packages/cloud-sdk) | Planned — not on npm (future phase)                                                   |
+| [`sentinel-vscode`](packages/vscode)        | Planned — not on npm (future phase)                                                   |
+| [`sentinel-action`](packages/github-action) | Planned — not on npm (future phase)                                                   |
 
 ---
 
-## Development
+## Developing from source
+
+For contributors working from a clone (not the primary install path):
 
 ```bash
+git clone https://github.com/blaycoder/Sentinel.git
+cd Sentinel
 npm install
 npm run build
-npm test
-npm run lint
-npm run typecheck
+npm exec -w @sentinel/cli -- sentinel scan ./src
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for commit conventions, dependency boundaries, and the PR checklist.
 
-Architecture documentation is coming soon.
+Architecture docs are planned.
 
 ---
 
 ## License
 
 [MIT](LICENSE)
+
+## Maintainers
+
+See [RELEASING.md](RELEASING.md) for npm publish instructions.
