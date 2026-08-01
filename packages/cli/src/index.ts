@@ -16,7 +16,7 @@ import { initCommand } from './commands/init.js'
 import { scanCommand } from './commands/scan.js'
 import { getRootHelp, getScanHelp, getInitHelp, SENTINEL_VERSION } from './help.js'
 
-function main(): void {
+async function main(): Promise<void> {
   const argv = process.argv.slice(2)
 
   let parsed
@@ -53,7 +53,10 @@ function main(): void {
       return
 
     case 'scan': {
-      const result = scanCommand(parsed.positionals, parsed.flags)
+      const result = await scanCommand(parsed.positionals, parsed.flags)
+      if (result.output !== undefined) {
+        process.stdout.write(result.output + '\n')
+      }
       process.exit(result.exitCode)
       break
     }
@@ -77,9 +80,7 @@ function main(): void {
   }
 }
 
-try {
-  main()
-} catch (error: unknown) {
+main().catch((error: unknown) => {
   process.stderr.write(`\nsentinel: unexpected error\n`)
   if (error instanceof Error) {
     process.stderr.write(`${error.stack ?? error.message}\n`)
@@ -90,4 +91,4 @@ try {
     `\nIf this is a bug, please report it at https://github.com/your-org/sentinel/issues\n`,
   )
   process.exit(2)
-}
+})

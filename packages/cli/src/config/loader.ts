@@ -197,6 +197,17 @@ function validateConfig(raw: unknown, configPath: string): SentinelConfig {
     result.baseUrl = config.baseUrl
   }
 
+  if ('contractSource' in config) {
+    if (config.contractSource !== undefined && typeof config.contractSource !== 'string') {
+      throw new ConfigLoadError(
+        `'contractSource' must be a string or undefined`,
+        configPath,
+        undefined,
+      )
+    }
+    result.contractSource = config.contractSource
+  }
+
   return result
 }
 

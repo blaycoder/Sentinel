@@ -44,13 +44,20 @@ Arguments:
   path          Directory to scan (default: current directory)
 
 Options:
-  -v, --verbose     Enable verbose debug logging
-      --no-color    Disable color output
-  -h, --help        Show this help
+  -v, --verbose           Enable verbose debug logging
+      --no-color          Disable color output
+  -f, --format <format>   Output format: text, json, sarif (default: text)
+  -o, --output <file>     Write output to file instead of stdout
+  -c, --config <file>     Path to sentinel config file
+      --root-dir <dir>    Override scan root directory
+      --max-warnings <n>  Exit 1 if warning count exceeds n (default: disabled)
+  -h, --help              Show this help
 
 Examples:
   sentinel scan
   sentinel scan ./src
+  sentinel scan --format json
+  sentinel scan --output results.sarif --format sarif
 `.trimStart()
 }
 
