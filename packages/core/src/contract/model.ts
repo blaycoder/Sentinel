@@ -49,6 +49,27 @@ export interface MatchResult {
   readonly reason: string
 }
 
+/** Kind of contract discrepancy between a call body and route schema. */
+export type DiscrepancyKind = 'missing-required-field' | 'unexpected-field' | 'type-mismatch'
+
+export interface Discrepancy {
+  readonly kind: DiscrepancyKind
+  readonly field: string
+  readonly expected: string | undefined
+  readonly actual: string | undefined
+}
+
+export type ContractDiffStatus = 'compatible' | 'discrepancies-found' | 'not-diffable'
+
+/** Outcome of diffing a matched call's request body against a route schema. */
+export interface ContractDiffResult {
+  readonly apiCallId: string
+  readonly status: ContractDiffStatus
+  readonly discrepancies: readonly Discrepancy[]
+  /** Set when status === 'not-diffable'; undefined otherwise. */
+  readonly reason: string | undefined
+}
+
 export class OpenApiParseError extends Error {
   constructor(
     message: string,

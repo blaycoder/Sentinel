@@ -89,11 +89,16 @@ export { formatScanDiagnosticsTerminal } from './report/format/diagnostic-format
 export { parseOpenApiSpec } from './contract/openapi-parser.js'
 export { resolveBodyShape } from './contract/schema-shape.js'
 export { matchApiCalls } from './contract/route-matcher.js'
+export { diffRequestBodies } from './contract/body-diff.js'
 export type {
   BackendRoute,
   BasicSchemaType,
   BodyShape,
+  ContractDiffResult,
+  ContractDiffStatus,
   ContractHttpMethod,
+  Discrepancy,
+  DiscrepancyKind,
   MatchResult,
   MatchStatus,
   SchemaField,
