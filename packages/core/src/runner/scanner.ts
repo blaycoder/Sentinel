@@ -6,6 +6,7 @@
  *   2. AST parsing & API extraction (api-extractor)
  *   3. URL resolution (url-resolver)
  *   4. Rule execution (rules/)
+ *   4.5. Contract check (optional, when contractSource is set)
  *   5. Result assembly
  *
  * The public API is a single function:
@@ -16,6 +17,9 @@
  * Only truly unexpected errors (programmer bugs) propagate as exceptions.
  */
 
+import { isAbsolute, resolve } from 'node:path'
+
+import { API_CONTRACT_MISMATCH_RULE_ID, runContractCheck } from '../contract/contract-check.js'
 import type { ApiCall } from '../model/api-call.js'
 import type { Finding } from '../model/finding.js'
 import { Severity } from '../model/finding.js'
@@ -47,10 +51,12 @@ export const DEFAULT_SCAN_CONFIG: Readonly<ScanConfig> = {
   rules: {
     'no-hardcoded-url': Severity.Error,
     'missing-error-handler': Severity.Warning,
+    'api-contract-mismatch': Severity.Error,
   },
   tsConfigPath: undefined,
   baseUrl: undefined,
   logger: undefined,
+  contractSource: undefined,
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -163,7 +169,24 @@ export async function scan(config: ScanConfig): Promise<ScanResult> {
   })
 
   // ── Phase 4: Rule Execution ──────────────────────────────────────────────
-  const findings = executeRules(resolvedCalls, config, logger, diagnostics)
+  let findings = executeRules(resolvedCalls, config, logger, diagnostics)
+
+  // ── Phase 4.5: Contract Check (optional) ─────────────────────────────────
+  if (config.contractSource !== undefined) {
+    const contractRuleSeverity = config.rules[API_CONTRACT_MISMATCH_RULE_ID]
+    if (contractRuleSeverity !== 'off') {
+      const specPath = isAbsolute(config.contractSource)
+        ? config.contractSource
+        : resolve(config.rootDir, config.contractSource)
+
+      const contractFindings = await runContractCheck(resolvedCalls, specPath, {
+        severity: contractRuleSeverity ?? Severity.Error,
+        logger: scopedLogger(logger, 'sentinel:contract'),
+        diagnostics,
+      })
+      findings = [...findings, ...contractFindings]
+    }
+  }
 
   // ── Phase 5: Result Assembly ─────────────────────────────────────────────
   const result = buildResult(
@@ -198,6 +221,9 @@ function executeRules(
 
   for (const [ruleId, severityOrOff] of Object.entries(config.rules)) {
     if (severityOrOff === 'off') continue
+
+    // Contract mismatch is orchestrated separately when contractSource is set.
+    if (ruleId === API_CONTRACT_MISMATCH_RULE_ID) continue
 
     const severity = severityOrOff
 

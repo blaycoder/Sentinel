@@ -56,6 +56,12 @@ export interface ScanConfig {
 
   /** Logger to use during the scan. If omitted, noopLogger is used. */
   readonly logger: Logger | undefined
+
+  /**
+   * Optional path to a local OpenAPI v3 JSON spec for contract checking.
+   * Relative paths resolve from rootDir. When unset, contract checking is skipped.
+   */
+  readonly contractSource: string | undefined
 }
 
 // ─── Diagnostics ─────────────────────────────────────────────────────────────

@@ -5,6 +5,7 @@ import { dirname, join, resolve } from 'node:path'
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { API_CONTRACT_MISMATCH_RULE_ID } from '../contract/contract-check.js'
 import { err, ok } from '../model/result.js'
 import { Severity } from '../model/finding.js'
 import * as fileReader from '../parse/file-reader.js'
@@ -21,6 +22,88 @@ function writeScanFixture(root: string, files: Record<string, string>): void {
     const absolutePath = join(root, relativePath)
     mkdirSync(dirname(absolutePath), { recursive: true })
     writeFileSync(absolutePath, content, 'utf8')
+  }
+}
+
+function writeOpenApiSpec(root: string, fileName: string, spec: unknown): string {
+  const filePath = join(root, fileName)
+  writeFileSync(filePath, JSON.stringify(spec), 'utf8')
+  return filePath
+}
+
+const OFF_RULES = {
+  'missing-error-handler': 'off' as const,
+  'no-hardcoded-url': 'off' as const,
+  'api-contract-mismatch': Severity.Error,
+}
+
+function usersPostSpec(): unknown {
+  return {
+    openapi: '3.0.3',
+    info: { title: 'Test', version: '1.0.0' },
+    paths: {
+      '/users': {
+        post: {
+          operationId: 'createUser',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['name'],
+                  properties: {
+                    name: { type: 'string' },
+                    age: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            '201': {
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  }
+}
+
+function usersGetSpec(): unknown {
+  return {
+    openapi: '3.0.3',
+    info: { title: 'Test', version: '1.0.0' },
+    paths: {
+      '/users': {
+        get: {
+          operationId: 'listUsers',
+          responses: {
+            '200': {
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   }
 }
 
@@ -231,5 +314,153 @@ describe('scan', () => {
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
+  })
+
+  describe('contract checking', () => {
+    it('produces no contract findings when contractSource is unset', async () => {
+      const root = createFixture()
+
+      try {
+        writeOpenApiSpec(root, 'api.json', usersPostSpec())
+        writeScanFixture(root, {
+          'api.ts': "axios.post('/users', { name: 'Alice' })",
+        })
+
+        const result = await scan(
+          resolveConfig({
+            rootDir: root,
+            rules: OFF_RULES,
+          }),
+        )
+
+        expect(
+          result.findings.filter((f) => f.ruleId === API_CONTRACT_MISMATCH_RULE_ID),
+        ).toHaveLength(0)
+      } finally {
+        rmSync(root, { recursive: true, force: true })
+      }
+    })
+
+    it('produces api-contract-mismatch findings for body-shape discrepancies', async () => {
+      const root = createFixture()
+
+      try {
+        writeOpenApiSpec(root, 'api.json', usersPostSpec())
+        const apiPath = join(root, 'api.ts')
+        writeScanFixture(root, {
+          'api.ts': "axios.post('/users', { age: 1 })",
+        })
+
+        const result = await scan(
+          resolveConfig({
+            rootDir: root,
+            contractSource: 'api.json',
+            rules: OFF_RULES,
+          }),
+        )
+
+        const contractFindings = result.findings.filter(
+          (f) => f.ruleId === API_CONTRACT_MISMATCH_RULE_ID,
+        )
+        expect(contractFindings).toHaveLength(1)
+        expect(contractFindings[0]?.message).toContain("Missing required field 'name'")
+        expect(contractFindings[0]?.message).toContain('POST /users')
+        expect(resolve(contractFindings[0]?.location.file ?? '')).toBe(resolve(apiPath))
+        expect(contractFindings[0]?.location.line).toBeGreaterThan(0)
+      } finally {
+        rmSync(root, { recursive: true, force: true })
+      }
+    })
+
+    it('emits config-warning and no contract findings when the spec file is missing', async () => {
+      const root = createFixture()
+
+      try {
+        writeScanFixture(root, {
+          'api.ts': "axios.post('/users', { name: 'Alice' })",
+        })
+
+        const result = await scan(
+          resolveConfig({
+            rootDir: root,
+            contractSource: 'missing.json',
+            rules: OFF_RULES,
+          }),
+        )
+
+        expect(result.diagnostics).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              kind: 'config-warning',
+              message: expect.stringContaining('Could not parse OpenAPI spec'),
+            }),
+          ]),
+        )
+        expect(
+          result.findings.filter((f) => f.ruleId === API_CONTRACT_MISMATCH_RULE_ID),
+        ).toHaveLength(0)
+      } finally {
+        rmSync(root, { recursive: true, force: true })
+      }
+    })
+
+    it('produces no findings for unmatched calls', async () => {
+      const root = createFixture()
+
+      try {
+        writeOpenApiSpec(root, 'api.json', usersGetSpec())
+        writeScanFixture(root, {
+          'api.ts': "fetch('/nope')",
+        })
+
+        const result = await scan(
+          resolveConfig({
+            rootDir: root,
+            contractSource: 'api.json',
+            rules: OFF_RULES,
+          }),
+        )
+
+        expect(
+          result.findings.filter((f) => f.ruleId === API_CONTRACT_MISMATCH_RULE_ID),
+        ).toHaveLength(0)
+      } finally {
+        rmSync(root, { recursive: true, force: true })
+      }
+    })
+
+    it('produces one finding per discrepancy for a call with multiple issues', async () => {
+      const root = createFixture()
+
+      try {
+        writeOpenApiSpec(root, 'api.json', usersPostSpec())
+        writeScanFixture(root, {
+          'api.ts': "axios.post('/users', { extra: true, age: 'bad' })",
+        })
+
+        const result = await scan(
+          resolveConfig({
+            rootDir: root,
+            contractSource: 'api.json',
+            rules: OFF_RULES,
+          }),
+        )
+
+        const contractFindings = result.findings.filter(
+          (f) => f.ruleId === API_CONTRACT_MISMATCH_RULE_ID,
+        )
+        expect(contractFindings.length).toBeGreaterThanOrEqual(2)
+
+        const apiCallIds = new Set(contractFindings.map((f) => f.apiCallId))
+        expect(apiCallIds.size).toBe(1)
+
+        const messages = contractFindings.map((f) => f.message)
+        expect(messages.some((m) => m.includes("Missing required field 'name'"))).toBe(true)
+        expect(messages.some((m) => m.includes("Unexpected field 'extra'"))).toBe(true)
+        expect(messages.some((m) => m.includes("Field 'age'"))).toBe(true)
+      } finally {
+        rmSync(root, { recursive: true, force: true })
+      }
+    })
   })
 })

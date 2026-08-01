@@ -90,6 +90,7 @@ export { parseOpenApiSpec } from './contract/openapi-parser.js'
 export { resolveBodyShape } from './contract/schema-shape.js'
 export { matchApiCalls } from './contract/route-matcher.js'
 export { diffRequestBodies } from './contract/body-diff.js'
+export { API_CONTRACT_MISMATCH_RULE_ID, runContractCheck } from './contract/contract-check.js'
 export type {
   BackendRoute,
   BasicSchemaType,
