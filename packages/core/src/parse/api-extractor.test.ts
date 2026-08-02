@@ -144,6 +144,22 @@ describe('extractApiCalls', () => {
       const call = single("fetch('/u')")
       expect(call.hasErrorHandler).toBe(false)
     })
+
+    it('does not throw for await fetch inside async function (regression)', () => {
+      const source = `
+export async function loadItems() {
+  const res = await fetch('/api/items', { headers: { Accept: 'application/json' } });
+  const body = await res.json().catch(() => ({}));
+  return body;
+}
+`
+      const calls = extract(source)
+      expect(calls.length).toBeGreaterThanOrEqual(1)
+      const fetchCall = calls.find((c) => c.caller === 'fetch')
+      expect(fetchCall).toBeDefined()
+      expect(fetchCall!.url).toBe('/api/items')
+      expect(fetchCall!.hasErrorHandler).toBe(false)
+    })
   })
 
   describe('known false positives', () => {

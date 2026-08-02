@@ -497,12 +497,12 @@ function isInsideTryCatch(node: ts.Node): boolean {
 }
 
 function hasCatchChain(node: ts.CallExpression): boolean {
-  // Walk up property access chains: fetch(...).then(...).catch(...)
-  for (let current: ts.Node = node; ; current = current.parent) {
-    const parent = current.parent
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- SourceFile has no parent
-    if (!parent) return false
+  // Walk up from node; check whether any ancestor is a .catch / .then(_, reject) chain.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- AST root may lack a parent
+  for (let parent = node.parent; parent; parent = parent.parent) {
+    if (ts.isSourceFile(parent)) {
+      return false
+    }
 
     if (ts.isPropertyAccessExpression(parent) && parent.name.text === 'catch') {
       return true
@@ -522,9 +522,9 @@ function hasCatchChain(node: ts.CallExpression): boolean {
     if (ts.isExpressionStatement(parent) || ts.isVariableDeclaration(parent)) {
       return false
     }
-
-    current = parent
   }
+
+  return false
 }
 
 function getLocation(node: ts.Node, sourceFile: ts.SourceFile): SourceLocation {

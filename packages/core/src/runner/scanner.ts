@@ -147,9 +147,10 @@ export async function scan(config: ScanConfig): Promise<ScanResult> {
       allApiCalls.push(...calls)
     } catch (cause) {
       filesErrored++
+      const detail = cause instanceof Error ? cause.message : String(cause)
       diagnostics.push({
         kind: 'parse-error',
-        message: `Failed to parse ${file.relativePath}`,
+        message: `Failed to parse ${file.relativePath}: ${detail}`,
         file: file.absolutePath,
         cause: cause instanceof Error ? cause : new Error(String(cause)),
       })
