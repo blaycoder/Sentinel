@@ -1,6 +1,6 @@
 {
   "name": "@sentinel-scan/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sentinel core analysis engine — pure, zero runtime dependencies",
   "type": "module",
   "main": "./dist/index.js",
