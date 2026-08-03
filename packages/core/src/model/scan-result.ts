@@ -19,13 +19,17 @@ export interface ScanConfig {
   /**
    * Glob patterns of files to include.
    * Relative to `rootDir`.
-   * @default ['**\/*.{ts,tsx,js,jsx}']
+   * Replaces the engine default when set in user config.
+   * @default ['**\/*.{ts,tsx,js,jsx,mts,cts}']
    */
   readonly include: readonly string[]
 
   /**
    * Glob patterns of files to exclude.
-   * @default ['**\/node_modules\/**', '**\/dist\/**', '**\/*.test.ts', '**\/*.spec.ts']
+   * User patterns are merged onto engine defaults (deduplicated).
+   * @default see {@link DEFAULT_SCAN_CONFIG} in runner/scanner.ts — includes
+   *   node_modules, dist, build, test/spec files, *.d.ts, *.min.js/mjs,
+   *   and vendor directories (vendor, vendors, third-party, bower_components).
    */
   readonly exclude: readonly string[]
 

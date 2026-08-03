@@ -5,7 +5,7 @@
  * The caller decides whether to write to stdout or stderr.
  */
 
-export const SENTINEL_VERSION = '0.1.0'
+export const SENTINEL_VERSION = '0.1.1'
 
 export function getRootHelp(): string {
   return `

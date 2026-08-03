@@ -8,21 +8,28 @@
 import { existsSync, writeFileSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 
+import { DEFAULT_SCAN_CONFIG } from '@sentinel-scan/core'
+
 import type { InitFlags } from '../args.js'
 
-const CONFIG_TEMPLATE = `import type { SentinelConfig } from '@sentinel-scan/core'
+function formatExcludeForTemplate(patterns: readonly string[]): string {
+  return JSON.stringify([...patterns], null, 2)
+    .split('\n')
+    .map((line) => `  ${line}`)
+    .join('\n')
+}
+
+function buildConfigTemplate(): string {
+  const excludeBlock = formatExcludeForTemplate(DEFAULT_SCAN_CONFIG.exclude)
+
+  return `import type { SentinelConfig } from '@sentinel-scan/core'
 
 export default {
   // Files to scan (relative to this config file's directory)
   include: ['src/**/*.{ts,tsx,js,jsx}'],
 
-  // Files to exclude from scanning
-  exclude: [
-    '**/node_modules/**',
-    '**/dist/**',
-    '**/*.test.ts',
-    '**/*.spec.ts',
-  ],
+  // Additional patterns extend engine defaults; omit exclude entirely to use defaults only.
+  exclude: ${excludeBlock},
 
   // Rules and their severity levels
   // 'error' | 'warning' | 'info' | 'hint' | 'off'
@@ -38,6 +45,7 @@ export default {
   // tsConfigPath: './tsconfig.json',
 } satisfies SentinelConfig
 `
+}
 
 export interface InitCommandResult {
   exitCode: 0 | 1 | 2
@@ -58,7 +66,7 @@ export function initCommand(positionals: string[], flags: InitFlags): InitComman
     }
   }
 
-  writeFileSync(configPath, CONFIG_TEMPLATE, 'utf-8')
+  writeFileSync(configPath, buildConfigTemplate(), 'utf-8')
 
   return {
     exitCode: 0,

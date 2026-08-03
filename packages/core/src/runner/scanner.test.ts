@@ -11,7 +11,7 @@ import { Severity } from '../model/finding.js'
 import * as fileReader from '../parse/file-reader.js'
 import { FileReaderError } from '../parse/file-reader.js'
 import { missingErrorHandler } from '../rules/missing-error-handler.js'
-import { resolveConfig, scan } from './scanner.js'
+import { DEFAULT_SCAN_CONFIG, resolveConfig, scan } from './scanner.js'
 
 function createFixture(): string {
   return mkdtempSync(join(tmpdir(), 'sentinel-scanner-'))
@@ -106,6 +106,46 @@ function usersGetSpec(): unknown {
     },
   }
 }
+
+describe('resolveConfig', () => {
+  it('uses default exclude when exclude is omitted', () => {
+    const config = resolveConfig({ rootDir: '/tmp' })
+    expect(config.exclude).toEqual(DEFAULT_SCAN_CONFIG.exclude)
+    expect(config.exclude).toHaveLength(15)
+  })
+
+  it('merges user exclude patterns onto defaults', () => {
+    const config = resolveConfig({
+      rootDir: '/tmp',
+      exclude: ['generated/**'],
+    })
+
+    expect(config.exclude).toContain('**/node_modules/**')
+    expect(config.exclude).toContain('**/*.min.js')
+    expect(config.exclude).toContain('**/*.d.ts')
+    expect(config.exclude).toContain('**/vendor/**')
+    expect(config.exclude).toContain('generated/**')
+  })
+
+  it('deduplicates exclude patterns when user repeats a default', () => {
+    const config = resolveConfig({
+      rootDir: '/tmp',
+      exclude: ['**/node_modules/**'],
+    })
+
+    const nodeModulesCount = config.exclude.filter((p) => p === '**/node_modules/**').length
+    expect(nodeModulesCount).toBe(1)
+  })
+
+  it('replaces include when user provides include (does not merge)', () => {
+    const config = resolveConfig({
+      rootDir: '/tmp',
+      include: ['src/**'],
+    })
+
+    expect(config.include).toEqual(['src/**'])
+  })
+})
 
 describe('scan', () => {
   afterEach(() => {
@@ -290,6 +330,35 @@ describe('scan', () => {
       expect(result.stats.filesScanned).toBe(1)
       expect(result.apiCalls.some((call) => call.url === '/in')).toBe(true)
       expect(result.apiCalls.some((call) => call.url === '/out')).toBe(false)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('excludes minified vendor lib files and vendor dirs by default', async () => {
+    const root = createFixture()
+
+    try {
+      writeScanFixture(root, {
+        'src/assets/js/lib/apexcharts.min.js': "fetch('https://cdn.example.com')",
+        'src/assets/js/lib/bootstrap.bundle.min.js': "fetch('/noise')",
+        'vendor/jquery/index.js': "fetch('/vendor')",
+        'src/lib/utils.ts': "fetch('/lib-utils')",
+        'src/app.ts': "fetch('/real')",
+      })
+
+      const result = await scan(
+        resolveConfig({
+          rootDir: root,
+          rules: { 'missing-error-handler': 'off', 'no-hardcoded-url': 'off' },
+        }),
+      )
+
+      expect(result.stats.filesScanned).toBe(2)
+      expect(result.apiCalls.some((call) => call.url === '/real')).toBe(true)
+      expect(result.apiCalls.some((call) => call.url === '/lib-utils')).toBe(true)
+      expect(result.apiCalls.some((call) => call.url === '/noise')).toBe(false)
+      expect(result.apiCalls.some((call) => call.url === '/vendor')).toBe(false)
     } finally {
       rmSync(root, { recursive: true, force: true })
     }

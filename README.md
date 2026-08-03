@@ -87,7 +87,8 @@ import type { SentinelConfig } from '@sentinel-scan/core'
 
 export default {
   include: ['src/**/*.{ts,tsx,js,jsx,mts,cts}'],
-  exclude: ['**/node_modules/**', '**/dist/**', '**/*.test.ts', '**/*.spec.ts'],
+  // Omit exclude to use engine defaults, or add patterns (merged onto defaults):
+  // exclude: ['generated/**'],
   rules: {
     'no-hardcoded-url': 'error',
     'missing-error-handler': 'warning',
@@ -124,14 +125,14 @@ Sentinel looks for config files by walking up from the scan directory:
 
 If none is found, engine defaults apply. Override with `--config <path>`.
 
-| Field            | Default / notes                                                                     |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| `include`        | `**/*.{ts,tsx,js,jsx,mts,cts}`                                                      |
-| `exclude`        | `node_modules`, `dist`, `build`, `*.test.ts`, `*.spec.ts`, `*.d.ts`, etc.           |
-| `rules`          | Per-rule severity: `error`, `warning`, `info`, `hint`, or `off`                     |
-| `contractSource` | Optional path to OpenAPI v3 **JSON** spec (relative to `rootDir`). No URLs or YAML. |
-| `baseUrl`        | Optional prefix for relative URL display                                            |
-| `tsConfigPath`   | Optional path to `tsconfig.json` for path alias resolution                          |
+| Field            | Default / notes                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `include`        | `**/*.{ts,tsx,js,jsx,mts,cts}` — replaces default when set in config                                                                 |
+| `exclude`        | Merged onto defaults: `node_modules`, `dist`, `build`, `*.test.*` / `*.spec.*` (TS), `*.d.ts`, `*.min.js` / `*.min.mjs`, vendor dirs |
+| `rules`          | Per-rule severity: `error`, `warning`, `info`, `hint`, or `off`                                                                      |
+| `contractSource` | Optional path to OpenAPI v3 **JSON** spec (relative to `rootDir`). No URLs or YAML.                                                  |
+| `baseUrl`        | Optional prefix for relative URL display                                                                                             |
+| `tsConfigPath`   | Optional path to `tsconfig.json` for path alias resolution                                                                           |
 
 Default rule severities (when not overridden in config):
 

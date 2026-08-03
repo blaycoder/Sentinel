@@ -37,6 +37,10 @@ import { scanFiles } from '../scan/file-scanner.js'
 
 export const DEFAULT_SCAN_CONFIG: Readonly<ScanConfig> = {
   include: ['**/*.{ts,tsx,js,jsx,mts,cts}'],
+  // Deliberately omit **/lib/**, **/assets/**, **/static/**, and **/public/** —
+  // those paths commonly hold first-party code (src/lib/, packages/*/lib/, mixed
+  // app assets). Skipping real API code silently is worse than vendor noise;
+  // users can add path-based excludes in config (merged onto these defaults).
   exclude: [
     '**/node_modules/**',
     '**/dist/**',
@@ -46,6 +50,13 @@ export const DEFAULT_SCAN_CONFIG: Readonly<ScanConfig> = {
     '**/*.spec.ts',
     '**/*.spec.tsx',
     '**/*.d.ts',
+    '**/*.min.js',
+    '**/*.min.mjs',
+    '**/vendor/**',
+    '**/vendors/**',
+    '**/third-party/**',
+    '**/third_party/**',
+    '**/bower_components/**',
   ],
   rootDir: process.cwd(),
   rules: {
@@ -61,14 +72,38 @@ export const DEFAULT_SCAN_CONFIG: Readonly<ScanConfig> = {
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
+function mergeGlobPatterns(
+  defaults: readonly string[],
+  user?: readonly string[],
+): readonly string[] {
+  if (user === undefined) return [...defaults]
+  const seen = new Set<string>()
+  const merged: string[] = []
+  for (const pattern of [...defaults, ...user]) {
+    if (!seen.has(pattern)) {
+      seen.add(pattern)
+      merged.push(pattern)
+    }
+  }
+  return merged
+}
+
 /**
  * Merge a partial user config with defaults, producing a complete ScanConfig.
+ *
+ * `exclude` patterns from the user are merged onto defaults (deduplicated).
+ * `include` replaces the default when provided — merging would prevent narrowing
+ * scope because the broad default would still match files outside the user's paths.
+ *
+ * Future follow-up: an `extendDefaults: false` flag could allow full override of
+ * exclude defaults for users who need to scan node_modules or other ignored paths.
  */
 export function resolveConfig(partial: Partial<ScanConfig>): ScanConfig {
   return {
     ...DEFAULT_SCAN_CONFIG,
     ...partial,
-    // Deep-merge rules rather than replacing the entire object
+    include: partial.include ?? DEFAULT_SCAN_CONFIG.include,
+    exclude: mergeGlobPatterns(DEFAULT_SCAN_CONFIG.exclude, partial.exclude),
     rules: {
       ...DEFAULT_SCAN_CONFIG.rules,
       ...partial.rules,

@@ -222,4 +222,28 @@ describe('scanFiles', () => {
       rmSync(root, { recursive: true, force: true })
     }
   })
+
+  it('excludes vendor/** but keeps first-party src/lib paths', async () => {
+    const root = createFixture()
+
+    try {
+      mkdirSync(join(root, 'vendor', 'pkg'), { recursive: true })
+      mkdirSync(join(root, 'src', 'lib'), { recursive: true })
+      writeFileSync(join(root, 'vendor', 'pkg', 'index.js'), 'export {}')
+      writeFileSync(join(root, 'src', 'lib', 'utils.ts'), 'export {}')
+
+      const result = await scanFiles({
+        rootDir: root,
+        extraIgnore: ['**/vendor/**'],
+      })
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      expect(result.value).toHaveLength(1)
+      expect(result.value[0]?.relativePath).toBe('src/lib/utils.ts')
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
 })

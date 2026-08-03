@@ -88,7 +88,7 @@ export interface SarifFormatterOptions {
  * Format a ScanResult as a SARIF 2.1.0 JSON string.
  */
 export function formatSarif(result: ScanResult, options: SarifFormatterOptions = {}): string {
-  const { toolVersion = '0.1.0' } = options
+  const { toolVersion = '0.1.1' } = options
 
   // Collect unique rules from findings
   const rulesMap = new Map<string, SarifRule>()
