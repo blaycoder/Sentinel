@@ -22,6 +22,16 @@ Set `^X.Y.Z` to the new core version (or the minimum compatible version if you n
 
 Keep `@sentinel-scan/core` and `@sentinel-scan/cli` version numbers aligned unless you have a deliberate reason to diverge.
 
+## Changelog
+
+Every release must update [CHANGELOG.md](CHANGELOG.md) before publishing.
+
+- Follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format already used in that file
+- Add a new `## [X.Y.Z] - YYYY-MM-DD` section at the top with `Added`, `Fixed`, `Changed`, and `Removed` subsections as appropriate
+- Document user-visible changes to `@sentinel-scan/core` and `@sentinel-scan/cli` only
+
+Automated changelog generation (Changesets, etc.) is deferred — maintain the changelog manually for now.
+
 ## Pre-publish checklist
 
 1. Ensure all changes are committed and tests pass:
@@ -48,7 +58,9 @@ Keep `@sentinel-scan/core` and `@sentinel-scan/cli` version numbers aligned unle
 
    Each tarball should contain only: `package.json`, `README.md`, `LICENSE`, and `dist/`.
 
-4. Publish (when ready):
+4. Update [CHANGELOG.md](CHANGELOG.md) with the new version section and today's date.
+
+5. Publish (when ready):
 
    ```bash
    cd packages/core && npm publish
