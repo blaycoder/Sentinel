@@ -32,6 +32,8 @@ When `contractSource` is set, Sentinel:
 
 OpenAPI support is deliberately scoped: **local JSON file paths only** — no remote URLs, no YAML.
 
+See [Testing API Contract Mismatches](#testing-api-contract-mismatches) for a step-by-step walkthrough.
+
 ---
 
 ## Current Status
@@ -101,6 +103,146 @@ export default {
 ```
 
 `contractSource` paths are resolved relative to `rootDir` (the directory you scan, or the config file's directory when discovered automatically).
+
+## Testing API Contract Mismatches
+
+This section walks through enabling `api-contract-mismatch` and verifying it works end to end — including v1 scope limits discovered from real-project testing.
+
+### Prerequisites
+
+You need a **local OpenAPI v3 JSON spec file** on disk.
+
+**Supported:** OpenAPI 3.x documents saved as `.json` with an `openapi` version field and a `paths` object.
+
+**Not supported:**
+
+- YAML specs (`.yaml` / `.yml`) — rejected with an explicit parse error
+- Remote URLs — `contractSource` must be a filesystem path
+- OpenAPI 2 / Swagger (`swagger: "2.0"`) — validation requires `openapi: "3.x.x"`
+- Postman collection exports — these are **not** OpenAPI specs. Pointing `contractSource` at a Postman JSON file produces a `config-warning` (for example, `OpenAPI spec must declare openapi version 3.x.x`). Convert via Postman's export-as-OpenAPI feature (if available in your Postman version) or generate a real spec from your backend framework.
+
+### Config setup
+
+Minimal working config:
+
+```ts
+import type { SentinelConfig } from '@sentinel-scan/core'
+
+export default {
+  contractSource: './openapi.json',
+  rules: {
+    'api-contract-mismatch': 'error',
+  },
+} satisfies SentinelConfig
+```
+
+Contract checking runs when `contractSource` is set **and** the rule is not `'off'`. If you omit the rule from config, the engine default is `error`.
+
+### What v1 actually checks
+
+Be precise about scope — silence in a real codebase is often expected, not a bug:
+
+- **Request body mismatches only** — missing required fields, unexpected fields, and literal type mismatches. Response shapes are **not** checked.
+- **Statically resolvable URLs only** — the URL in the call must be a string literal or a matchable template literal (static path segments with `${…}` placeholders). A call like `fetch(apiUrl('/api/users'))` where the URL is returned by a helper (`call-expression` urlKind) will **not** match any route and produces no finding.
+- **Statically resolvable request bodies only** — the body must be an object literal directly in the call (e.g. `axios.post('/users', { name: 'Alice' })`). GET requests, calls with no body, or bodies built from variables/spreads/functions produce no finding (`not-diffable` — expected).
+- **Exact route matching** — method and path segments must align with the spec (including `{param}` templates). v1 does **not** normalize query strings (`/users/1?page=1` won't match `{id}`) or trailing slashes (`/users/` vs `/users`).
+- **Unmatched calls produce no output** — if no route in the spec corresponds to the call, Sentinel skips it silently (known v1 limitation, not an error).
+
+Findings appear **only** when a matched call has request-body discrepancies (`discrepancies-found`). Unmatched, unresolvable, compatible, and not-diffable cases emit no findings (use `--verbose` for debug details).
+
+### Minimal “does it work” test
+
+Use this isolated recipe to confirm the feature works before debugging your real codebase's calling conventions:
+
+**1. Create `openapi.json`:**
+
+```json
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Test", "version": "1.0.0" },
+  "paths": {
+    "/users": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    }
+  }
+}
+```
+
+**2. Create `api.ts`:**
+
+```ts
+axios.post('/users', { wrongField: 'x' })
+```
+
+Use a **direct** string-literal URL and inline object literal — not a URL helper or variable body.
+
+**3. Create `sentinel.config.ts`** (as shown in [Config setup](#config-setup) above).
+
+**4. Run:**
+
+```bash
+sentinel scan . --verbose
+```
+
+**5. Expect:** one `api-contract-mismatch` finding mentioning a missing required field `name` for `POST /users`.
+
+If this recipe passes but your project shows silence, the feature is working — your project's URL/body patterns likely fall outside v1 static-analysis limits.
+
+### Troubleshooting — silence is often expected
+
+**CLI inspection:**
+
+```bash
+sentinel scan ./src --verbose --format json
+```
+
+- `--verbose` (stderr): `Parsed N backend route(s)`, `Contract match skipped` (unmatched/unresolvable + reason), `Contract diff skipped` (not-diffable + reason)
+- `--format json`: inspect `apiCalls[]`, `findings[]`, and `diagnostics[]` (look for `config-warning` if the spec failed to parse)
+
+**Common reasons for no `api-contract-mismatch` finding:**
+
+| Cause                  | Example                                                                  | Verbose hint                                             |
+| ---------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------- |
+| Unresolvable URL       | `fetch(apiUrl('/users'))`                                                | `Contract match skipped` — `call-expression`             |
+| No static request body | GET request, or `axios.post(url, payload)` where `payload` is a variable | `Contract diff skipped` — body not statically resolvable |
+| Unmatched route        | Path or method doesn't exist in spec                                     | `Contract match skipped` — `unmatched`                   |
+| Compatible diff        | Body matches spec (no discrepancy)                                       | No diff skip — simply no findings                        |
+| Spec parse failure     | Wrong file format, Postman export, missing `openapi 3.x`                 | `config-warning` in diagnostics                          |
+
+**Programmatic debugging** (`@sentinel-scan/core` exports):
+
+```ts
+import {
+  scan,
+  resolveConfig,
+  parseOpenApiSpec,
+  matchApiCalls,
+  diffRequestBodies,
+} from '@sentinel-scan/core'
+
+const result = await scan(resolveConfig({ rootDir: '.', contractSource: './openapi.json' }))
+const spec = await parseOpenApiSpec('/absolute/path/to/openapi.json')
+if (spec.ok) {
+  const matches = matchApiCalls(result.apiCalls, spec.value)
+  const diffs = diffRequestBodies(result.apiCalls, matches, spec.value)
+  // Inspect match.status / match.reason and diff.status / diff.reason per call
+}
+```
 
 ### CLI examples
 

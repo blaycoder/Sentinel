@@ -40,6 +40,25 @@ If none is found, engine defaults apply. Override with `--config <path>`.
 
 **Note:** Loading `.ts` config files requires a TypeScript loader (e.g. `tsx` or `ts-node`) available at runtime. Use `.js`, `.mjs`, or `.sentinelrc.json` if you prefer zero extra tooling.
 
+### Contract mismatch detection
+
+Enable request-body contract checking by setting `contractSource` to a local OpenAPI v3 JSON file and keeping the `api-contract-mismatch` rule enabled (default severity: `error`):
+
+```ts
+export default {
+  contractSource: './openapi.json',
+  rules: { 'api-contract-mismatch': 'error' },
+}
+```
+
+v1 limitations to know before expecting findings:
+
+- **Request bodies only** — response shapes are not checked
+- **Static URLs only** — URLs built by helper functions (e.g. `fetch(apiUrl('/path'))`) cannot be matched
+- **Static object-literal bodies only** — GET requests, variable bodies, and dynamic payloads produce no finding
+
+For a step-by-step walkthrough, a minimal “does it work” test recipe, and troubleshooting when silence is expected, see **[Testing API Contract Mismatches](https://github.com/blaycoder/Sentinel#testing-api-contract-mismatches)** in the root README.
+
 ## Commands
 
 ### `sentinel scan [path] [options]`
@@ -85,6 +104,8 @@ Log output goes to stderr; scan results go to stdout (or `--output`).
 Full project documentation and configuration reference:
 
 **https://github.com/blaycoder/Sentinel**
+
+Contract mismatch setup, scope limits, and troubleshooting: [Testing API Contract Mismatches](https://github.com/blaycoder/Sentinel#testing-api-contract-mismatches).
 
 ## License
 

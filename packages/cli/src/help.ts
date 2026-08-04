@@ -58,6 +58,10 @@ Examples:
   sentinel scan ./src
   sentinel scan --format json
   sentinel scan --output results.sarif --format sarif
+
+Contract checking:
+  Set contractSource in sentinel.config.ts to a local OpenAPI v3 JSON file.
+  See README: https://github.com/blaycoder/Sentinel#testing-api-contract-mismatches
 `.trimStart()
 }
 
